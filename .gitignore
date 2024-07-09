@@ -44,4 +44,5 @@ yarn.lock
 Thumbs.db
 
 
-.env
+/.env
+/node_modules

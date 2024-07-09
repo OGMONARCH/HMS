@@ -5,18 +5,16 @@ const db = require('../model/db_Controller.js');
 const nodemailer = require('nodemailer');
 const randomToken = require('random-token');
 const { check, validationResult } = require('express-validator');
-require('dotenv').config(); // Load environment variables
+require('dotenv').config();
 
-// Middleware
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-// Validation and Signup Route
 router.post(
     '/',
     [
         check('username').notEmpty().withMessage('Username is required'),
-        check('email').notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email format'),
+        check('email').notEmpty().withMessage('Email is required'),
         check('password').notEmpty().withMessage('Password is required'),
     ],
     (req, res) => {
@@ -27,14 +25,13 @@ router.post(
 
         const { username, email, password } = req.body;
         const email_status = "not verified";
+        const token = randomToken(8);
 
-        // Signup and verification process
         db.signup(username, email, password, email_status, (err) => {
             if (err) {
                 return res.status(500).send(err.message);
             }
 
-            const token = randomToken(8);
             db.verify(username, email, token, (err) => {
                 if (err) {
                     return res.status(500).send(err.message);
@@ -55,8 +52,10 @@ router.post(
                         <p>Verify Link: <a href="http://localhost:4000/verify">Verify</a></p>
                         <strong>AUTO GENERATED, DON'T REPLY</strong>`;
 
-                    // Send email logic (configure nodemailer)
                     const transporter = nodemailer.createTransport({
+                        host: "smtp.gmail.com",
+                        port: 465,
+                        secure: true,
                         service: 'Gmail',
                         auth: {
                             user: process.env.EMAIL_USER,
@@ -76,7 +75,7 @@ router.post(
                             return res.status(500).send(error.message);
                         }
                         res.status(200).send('Signup successful and verification email sent');
-                        console.log(info);
+                        console.log(info)
                     });
                 });
             });

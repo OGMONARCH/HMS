@@ -1,7 +1,6 @@
 const mysql = require('mysql');
 const express = require('express');
 const router = express.Router();
-const bodyParser = require('body-parser');
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -14,7 +13,7 @@ connection.connect((err) => {
     if (err) {
         throw err;
     } else {
-        console.log('connected to database successfully');
+        console.log('Connected to database successfully');
     }
 });
 
@@ -23,7 +22,7 @@ module.exports.signup = (username, email, password, status, callback) => {
     connection.query(checkEmailQuery, [email], (err, result) => {
         if (err) return callback(err);
 
-        if (result[0] == undefined) {
+        if (result.length === 0) {
             const insertUserQuery = 'INSERT INTO users (username, email, password, email_status) VALUES (?, ?, ?, ?)';
             connection.query(insertUserQuery, [username, email, password, status], callback);
         } else {
@@ -37,9 +36,19 @@ module.exports.verify = (username, email, token, callback) => {
     connection.query(insertVerifyQuery, [username, email, token], callback);
 };
 
-module.exports.getuserid = (email, callback) => {
-    const getUserQuery = 'SELECT * FROM verify WHERE email = ?';
-    connection.query(getUserQuery, [email], callback);
+module.exports.getVerifyDetails = (id, callback) => {
+    const getUserQuery = 'SELECT token, email FROM verify WHERE id = ?';
+    connection.query(getUserQuery, [id], callback);
+};
+
+module.exports.updateEmailStatus = (email, callback) => {
+    const updateStatusQuery = 'UPDATE users SET email_status = "verified" WHERE email = ?';
+    connection.query(updateStatusQuery, [email], callback);
+};
+
+module.exports.matchToken = (id, token, callback) => {
+    const getUserQuery = 'SELECT * FROM verify WHERE id = ? AND token = ?';
+    connection.query(getUserQuery, [id, token], callback);
 };
 
 // Exporting the router if needed for express routes

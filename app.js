@@ -5,8 +5,21 @@ const session = require('express-session');
 const path = require('path');
 const bodyParser = require('body-parser');
 const http = require('http');
+const ejs = require('ejs');
+const multer = require('multer');
+const async = require('async');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+const { check, validationResult } = require('express-validator');
+const sweetalert = require('sweetalert2');
+
 const signup = require('./controller/SignUpController');
 const login = require('./controller/LoginController');
+const verify = require('./controller/VerificationController');
+const db = require('./model/db_Controller');
+
+
+
 
 const app = express();
 const server = http.createServer(app);
@@ -35,6 +48,7 @@ app.use(session({
 // Routes
 app.use('/signup', signup);
 app.use('/login', login);
+app.use('/verify', verify); 
 
 app.get('/home', (req, res) => {
     if (req.session.loggedin) {
@@ -45,7 +59,7 @@ app.get('/home', (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT ;
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
